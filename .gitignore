@@ -1,0 +1,7 @@
+# Eclipse
+bin/
+.cache
+.settings
+
+# Mac
+.DS_Store
