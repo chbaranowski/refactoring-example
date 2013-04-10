@@ -11,12 +11,16 @@ public class TennisGame {
     }
 
     public void wonPoint(String playerName) {
-        if (player1.equals(new Player(playerName)))
-            player1.score = player1.score.plusOne();
-        else if (player2.equals(new Player(playerName)))
-            player2.score = player2.score.plusOne();
+        wonPoint(new Player(playerName));
+    }
+
+    private void wonPoint(Player player) {
+        if (player1.equals(player))
+            player1.wonPoint();
+        else if (player2.equals(player))
+            player2.wonPoint();
         else
-            throw new IllegalArgumentException("Player with name " + playerName
+            throw new IllegalArgumentException("Player with name " + player.name
                     + " is unknown.");
     }
 
@@ -93,6 +97,10 @@ class Player {
     
     public Player(String name) {
         this.name = name;
+    }
+    
+    public void wonPoint() {
+        this.score = score.plusOne();
     }
 
     @Override
