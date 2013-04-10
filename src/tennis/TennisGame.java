@@ -32,7 +32,7 @@ public class TennisGame {
     public String getScore() {
         String score = "";
         Score tempScore = Score.zero();
-        if (player1.score.equals(player2.score)) {
+        if (player1.hasSameScoreThen(player2)) {
             score = getAllScore(player1.score);
         } else if (player1.score.value >= 4 || player2.score.value >= 4) {
             int minusResult = player1.score.minus(player2.score).value;
@@ -71,26 +71,11 @@ public class TennisGame {
         return score;
     }
 
-    private String getAllScore(Score scoreAllValue) {
-        String score;
-        switch (scoreAllValue.value) {
-        case 0:
-            score = "Love-All";
-            break;
-        case 1:
-            score = "Fifteen-All";
-            break;
-        case 2:
-            score = "Thirty-All";
-            break;
-        case 3:
-            score = "Forty-All";
-            break;
-        default:
-            score = "Deuce";
-            break;
-        }
-        return score;
+    private String getAllScore(Score scoreAll) {
+        if(scoreAll.isDeuce())
+            return scoreAll.name();
+        else
+            return scoreAll.name() + "-All";
     }
 }
 
@@ -106,6 +91,10 @@ class Player {
 
     public void wonPoint() {
         this.score = score.plusOne();
+    }
+    
+    public boolean hasSameScoreThen(Player player){
+        return score.equals(player.score);
     }
 
 }
@@ -124,6 +113,31 @@ class Score {
 
     public Score minus(Score score) {
         return new Score(value - score.value);
+    }
+    
+    public String name() {
+        String name;
+        switch (value) {
+        case 0:
+            name = "Love";
+            break;
+        case 1:
+            name = "Fifteen";
+            break;
+        case 2:
+            name = "Thirty";
+            break;
+        case 3:
+            name = "Forty";
+            break;
+        default:
+            name = "Deuce";
+        }
+        return name;
+    }
+    
+    public boolean isDeuce(){
+        return value == 4;
     }
 
     public static Score zero() {
