@@ -11,17 +11,22 @@ public class TennisGame {
     }
 
     public void wonPoint(String playerName) {
-        wonPoint(new Player(playerName));
+        player(playerName).wonPoint();
     }
 
-    private void wonPoint(Player player) {
-        if (player1.equals(player))
-            player1.wonPoint();
-        else if (player2.equals(player))
-            player2.wonPoint();
-        else
-            throw new IllegalArgumentException("Player with name " + player.name
-                    + " is unknown.");
+    private Player player(String name) {
+        if (player1.name.equals(name)) {
+            return player1;
+        } else if (player2.name.equals(name)) {
+            return player2;
+        } else {
+            throw unknownPlayer(name);
+        }
+    }
+
+    private IllegalArgumentException unknownPlayer(String name) {
+        String msg = String.format("Player with name %s is unknown.", name);
+        return new IllegalArgumentException(msg);
     }
 
     public String getScore() {
@@ -90,62 +95,37 @@ public class TennisGame {
 }
 
 class Player {
-    
+
     final String name;
-    
+
     Score score = Score.zero();
-    
+
     public Player(String name) {
         this.name = name;
     }
-    
+
     public void wonPoint() {
         this.score = score.plusOne();
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Player other = (Player) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
-    }
-    
 }
 
 class Score {
-    
+
     final int value;
 
     public Score(int scoreValue) {
         this.value = scoreValue;
     }
-    
-    public Score plusOne(){
+
+    public Score plusOne() {
         return new Score(value + 1);
     }
-    
+
     public Score minus(Score score) {
         return new Score(value - score.value);
     }
-    
+
     public static Score zero() {
         return new Score(0);
     }
@@ -171,5 +151,5 @@ class Score {
             return false;
         return true;
     }
-    
+
 }
