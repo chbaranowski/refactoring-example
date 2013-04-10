@@ -2,8 +2,6 @@ package tennis;
 
 public class TennisGame {
 
-    private Score score1 = Score.zero();
-    private Score score2 = Score.zero();
     private Player player1;
     private Player player2;
 
@@ -14,9 +12,9 @@ public class TennisGame {
 
     public void wonPoint(String playerName) {
         if (player1.equals(new Player(playerName)))
-            score1 = score1.plusOne();
+            player1.score = player1.score.plusOne();
         else if (player2.equals(new Player(playerName)))
-            score2 = score2.plusOne();
+            player2.score = player2.score.plusOne();
         else
             throw new IllegalArgumentException("Player with name " + playerName
                     + " is unknown.");
@@ -25,10 +23,10 @@ public class TennisGame {
     public String getScore() {
         String score = "";
         Score tempScore = Score.zero();
-        if (score1.equals(score2)) {
-            score = getAllScore(score1);
-        } else if (score1.value >= 4 || score2.value >= 4) {
-            int minusResult = score1.minus(score2).value;
+        if (player1.score.equals(player2.score)) {
+            score = getAllScore(player1.score);
+        } else if (player1.score.value >= 4 || player2.score.value >= 4) {
+            int minusResult = player1.score.minus(player2.score).value;
             if (minusResult == 1)
                 score = "Advantage player1";
             else if (minusResult == -1)
@@ -40,10 +38,10 @@ public class TennisGame {
         } else {
             for (int i = 1; i < 3; i++) {
                 if (i == 1)
-                    tempScore = score1;
+                    tempScore = player1.score;
                 else {
                     score += "-";
-                    tempScore = score2;
+                    tempScore = player2.score;
                 }
                 switch (tempScore.value) {
                 case 0:
