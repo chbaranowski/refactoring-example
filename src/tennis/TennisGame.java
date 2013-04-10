@@ -14,6 +14,26 @@ public class TennisGame {
         player(playerName).wonPoint();
     }
 
+    public String getScore() {
+        if (player1.hasSameScoreThen(player2)) {
+            return sameScore();
+        } else if (playerOneLeadsAndHasMoreThanFourPoints()) {
+            if (playerOneHasTwoMorePoints()) {
+                return winFor(player1);
+            } else {
+                return advantageFor(player1);
+            }
+        } else if (playerTwoLeadsAndHasMoreThanFourPoints()) {
+            if (playerTwoHasTwoMorePoints()) {
+                return winFor(player2);
+            } else {
+                return advantageFor(player2);
+            }
+        } else {
+            return score();
+        }
+    }
+    
     private Player player(String name) {
         if (player1.name.equals(name)) {
             return player1;
@@ -24,36 +44,45 @@ public class TennisGame {
         }
     }
 
-    private IllegalArgumentException unknownPlayer(String name) {
-        String msg = String.format("Player with name %s is unknown.", name);
-        return new IllegalArgumentException(msg);
+    private boolean playerTwoHasTwoMorePoints() {
+        return player2.hasTwoMorePointsThen(player1);
     }
 
-    public String getScore() {
-        String score = "";
-        if (player1.hasSameScoreThen(player2)) {
-            score = getAllScore(player1.score);
-        } else if (player1.score.value >= 4 || player2.score.value >= 4) {
-            int minusResult = player1.score.minus(player2.score).value;
-            if (minusResult == 1)
-                score = "Advantage player1";
-            else if (minusResult == -1)
-                score = "Advantage player2";
-            else if (minusResult >= 2)
-                score = "Win for player1";
-            else
-                score = "Win for player2";
-        } else {
-            score = player1.score.name() + "-" + player2.score.name();
-        }
-        return score;
+    private boolean playerOneHasTwoMorePoints() {
+        return player1.hasTwoMorePointsThen(player2);
     }
 
-    private String getAllScore(Score scoreAll) {
-        if(scoreAll.isDeuce())
+    private boolean playerTwoLeadsAndHasMoreThanFourPoints() {
+        return player2.hasFourPoints() && player2.hasMorePointsThen(player1);
+    }
+
+    private boolean playerOneLeadsAndHasMoreThanFourPoints() {
+        return player1.hasFourPoints() && player1.hasMorePointsThen(player2);
+    }
+
+    private String score() {
+        return player1.score.name() + "-" + player2.score.name();
+    }
+
+    private String advantageFor(Player player) {
+        return "Advantage " + player.name;
+    }
+
+    private String winFor(Player player) {
+        return "Win for " + player.name;
+    }
+
+    private String sameScore() {
+        Score scoreAll = player1.score;
+        if (scoreAll.isDeuce())
             return scoreAll.name();
         else
             return scoreAll.name() + "-All";
+    }
+    
+    private IllegalArgumentException unknownPlayer(String name) {
+        String msg = String.format("Player with name %s is unknown.", name);
+        return new IllegalArgumentException(msg);
     }
 }
 
@@ -67,12 +96,24 @@ class Player {
         this.name = name;
     }
 
+    public boolean hasTwoMorePointsThen(Player player2) {
+        return score.value >= player2.score.value + 2;
+    }
+
+    public boolean hasMorePointsThen(Player player2) {
+        return score.value > player2.score.value;
+    }
+
     public void wonPoint() {
         this.score = score.plusOne();
     }
-    
-    public boolean hasSameScoreThen(Player player){
+
+    public boolean hasSameScoreThen(Player player) {
         return score.equals(player.score);
+    }
+
+    public boolean hasFourPoints() {
+        return score.value >= 4;
     }
 
 }
@@ -89,10 +130,6 @@ class Score {
         return new Score(value + 1);
     }
 
-    public Score minus(Score score) {
-        return new Score(value - score.value);
-    }
-    
     public String name() {
         String name;
         switch (value) {
@@ -113,8 +150,8 @@ class Score {
         }
         return name;
     }
-    
-    public boolean isDeuce(){
+
+    public boolean isDeuce() {
         return value == 4;
     }
 
