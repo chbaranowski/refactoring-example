@@ -4,18 +4,18 @@ public class TennisGame {
 
     private Score score1 = Score.zero();
     private Score score2 = Score.zero();
-    private String player1Name;
-    private String player2Name;
+    private Player player1;
+    private Player player2;
 
     public TennisGame(String player1Name, String player2Name) {
-        this.player1Name = player1Name;
-        this.player2Name = player2Name;
+        this.player1 = new Player(player1Name);
+        this.player2 = new Player(player2Name);
     }
 
     public void wonPoint(String playerName) {
-        if (player1Name.equals(playerName))
+        if (player1.equals(new Player(playerName)))
             score1 = score1.plusOne();
-        else if (player2Name.equals(playerName))
+        else if (player2.equals(new Player(playerName)))
             score2 = score2.plusOne();
         else
             throw new IllegalArgumentException("Player with name " + playerName
@@ -85,6 +85,43 @@ public class TennisGame {
         }
         return score;
     }
+}
+
+class Player {
+    
+    final String name;
+    
+    Score score = Score.zero();
+    
+    public Player(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Player other = (Player) obj;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        return true;
+    }
+    
 }
 
 class Score {
