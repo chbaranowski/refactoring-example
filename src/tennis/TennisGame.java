@@ -1,83 +1,72 @@
 package tennis;
 
+import java.util.*;
+
 public class TennisGame {
 
-    private Player player1;
-    private Player player2;
-
-    public TennisGame(String player1Name, String player2Name) {
-        this.player1 = new Player(player1Name);
-        this.player2 = new Player(player2Name);
+    private PlayerRegistry registry = new PlayerRegistry();
+    
+    public TennisGame(String firstPlayer, String secondPlayer) {
+        registry.register(firstPlayer);
+        registry.register(secondPlayer);
     }
 
     public void wonPoint(String playerName) {
-        player(playerName).wonPoint();
+        Player player = findPlayerWith(playerName);
+        player.wonPoint();
     }
 
     public String getScore() {
-        if (player1.hasSameScoreThen(player2)) {
+        return getScore(registry.getFirstPlayer(), registry.getSecondPlayer());
+    }
+
+    private String getScore(Player firstPlayer, Player secondPlayer) {
+        if (firstPlayer.hasSameScoreThen(secondPlayer)) {
             return sameScore();
-        } else if (playerOneLeadsAndHasMoreThanFourPoints()) {
-            if (playerOneHasTwoMorePoints()) {
-                return winFor(player1);
+        } else if (firstPlayer.hasFourOrMoreAndHasMorePointsThen(secondPlayer)) {
+            if (firstPlayer.hasTwoMorePointsThen(secondPlayer)) {
+                return winFor(firstPlayer);
             } else {
-                return advantageFor(player1);
+                return advantageFor(firstPlayer);
             }
-        } else if (playerTwoLeadsAndHasMoreThanFourPoints()) {
-            if (playerTwoHasTwoMorePoints()) {
-                return winFor(player2);
+        } else if (secondPlayer.hasFourOrMoreAndHasMorePointsThen(firstPlayer)) {
+            if (secondPlayer.hasTwoMorePointsThen(firstPlayer)) {
+                return winFor(secondPlayer);
             } else {
-                return advantageFor(player2);
+                return advantageFor(secondPlayer);
             }
         } else {
-            return score();
+            return score(firstPlayer, secondPlayer);
         }
     }
     
-    private Player player(String name) {
-        if (player1.name.equals(name)) {
-            return player1;
-        } else if (player2.name.equals(name)) {
-            return player2;
+    private Player findPlayerWith(String name) {
+        Player player = registry.findByName(name);
+        if (player != null) {
+            return player;
         } else {
             throw unknownPlayer(name);
         }
     }
-
-    private boolean playerTwoHasTwoMorePoints() {
-        return player2.hasTwoMorePointsThen(player1);
-    }
-
-    private boolean playerOneHasTwoMorePoints() {
-        return player1.hasTwoMorePointsThen(player2);
-    }
-
-    private boolean playerTwoLeadsAndHasMoreThanFourPoints() {
-        return player2.hasFourPoints() && player2.hasMorePointsThen(player1);
-    }
-
-    private boolean playerOneLeadsAndHasMoreThanFourPoints() {
-        return player1.hasFourPoints() && player1.hasMorePointsThen(player2);
-    }
-
-    private String score() {
-        return player1.score.name() + "-" + player2.score.name();
+   
+    private String score(Player player1, Player player2) {
+        return String.format("%s-%s", player1.getScore(), player2.getScore());
     }
 
     private String advantageFor(Player player) {
-        return "Advantage " + player.name;
+        return String.format("Advantage %s", player);
     }
 
     private String winFor(Player player) {
-        return "Win for " + player.name;
+        return String.format("Win for %s", player);
     }
 
     private String sameScore() {
-        Score scoreAll = player1.score;
-        if (scoreAll.isDeuce())
-            return scoreAll.name();
+        Score score = registry.getFirstPlayer().getScore();
+        if (score.isDeuce())
+            return String.valueOf(score);
         else
-            return scoreAll.name() + "-All";
+            return String.format("%s-All", score);
     }
     
     private IllegalArgumentException unknownPlayer(String name) {
@@ -86,52 +75,92 @@ public class TennisGame {
     }
 }
 
-class Player {
-
-    final String name;
-
-    Score score = Score.zero();
-
-    public Player(String name) {
-        this.name = name;
+class PlayerRegistry {
+    
+    private Map<String, Player> players = new HashMap<>();
+    
+    void register(String name) {
+        players.put(name, new Player(name));
     }
-
-    public boolean hasTwoMorePointsThen(Player player2) {
-        return score.value >= player2.score.value + 2;
+    
+    Player getFirstPlayer(){
+        Iterator<Player> iterator = players.values().iterator();
+        return iterator.next();
     }
-
-    public boolean hasMorePointsThen(Player player2) {
-        return score.value > player2.score.value;
+    
+    Player getSecondPlayer(){
+        Iterator<Player> iterator = players.values().iterator();
+        iterator.next();
+        return iterator.next();
     }
-
-    public void wonPoint() {
-        this.score = score.plusOne();
+    
+    Player findByName(String name) {
+        return players.get(name);
     }
-
-    public boolean hasSameScoreThen(Player player) {
-        return score.equals(player.score);
-    }
-
-    public boolean hasFourPoints() {
-        return score.value >= 4;
-    }
-
 }
 
-class Score {
+class Player extends ValueObject<String>{
 
-    final int value;
+    private Score score = Score.zero();
 
-    public Score(int scoreValue) {
-        this.value = scoreValue;
+    Player(String name) {
+        super(name);
     }
 
-    public Score plusOne() {
-        return new Score(value + 1);
+    boolean hasTwoMorePointsThen(Player otherPlayer) {
+        return getScore().isGreaterThan(otherPlayer.getScore().plus(1));
     }
 
-    public String name() {
-        String name;
+    boolean hasMorePointsThen(Player otherPlayer) {
+        return getScore().isGreaterThan(otherPlayer.getScore());
+    }
+    
+    boolean hasFourOrMoreAndHasMorePointsThen(Player otherPlayer) {
+        return hasMorePointsThen(otherPlayer) && hasFourOrMorePoints();
+    }
+
+    void wonPoint() {
+       this.score = score.plus(1);
+    }
+
+    boolean hasSameScoreThen(Player player) {
+        return getScore().equals(player.getScore());
+    }
+
+    boolean hasFourOrMorePoints() {
+        return getScore().value >= 4;
+    }
+
+    Score getScore() {
+        return score;
+    }
+}
+
+class Score extends ValueObject<Integer> {
+
+    Score(Integer scoreValue) {
+        super(scoreValue);
+    }
+    
+    boolean isGreaterThan(Score otherScore) {
+        return value > otherScore.value;
+    }
+
+    Score plus(Integer scoreValue){
+        return new Score(this.value + scoreValue);
+    }
+    
+    boolean isDeuce() {
+        return value == 4;
+    }
+
+    static Score zero() {
+        return new Score(0);
+    }
+
+    @Override
+    public String toString() {
+        String name = "unknown";
         switch (value) {
         case 0:
             name = "Love";
@@ -145,40 +174,44 @@ class Score {
         case 3:
             name = "Forty";
             break;
-        default:
+        case 4:
             name = "Deuce";
+            break;
         }
         return name;
     }
 
-    public boolean isDeuce() {
-        return value == 4;
-    }
+}
 
-    public static Score zero() {
-        return new Score(0);
+class ValueObject<VALUEOBJECT_TYPE> {
+    
+    protected final VALUEOBJECT_TYPE value;
+    
+    public ValueObject(VALUEOBJECT_TYPE value) {
+        if(value == null) {
+            throw new NullPointerException();
+        }
+        this.value = value;
     }
-
+    
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + value;
-        return result;
+        return Objects.hash(value);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
         if (obj == null)
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Score other = (Score) obj;
-        if (value != other.value)
-            return false;
-        return true;
+        ValueObject<?> other = (ValueObject<?>) obj;
+        return Objects.equals(value, other.value);
     }
-
+    
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+    
 }

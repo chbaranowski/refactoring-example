@@ -1,6 +1,8 @@
 package tennis;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -99,6 +101,62 @@ public class TennisGameTest {
             game.wonPoint("XY");
         }
         
+    }
+    
+    public static class ValueObjectTest {
+        
+        class StringValueObject extends ValueObject<String> {
+            public StringValueObject(String value) {
+                super(value);
+            }
+        }
+
+        class IntegerValueObject extends ValueObject<Integer> {
+            public IntegerValueObject(Integer value) {
+                super(value);
+            }
+        }
+        
+        StringValueObject textObj = new StringValueObject("A");
+        IntegerValueObject intObj = new IntegerValueObject(42);
+        
+        @Test
+        public void equalsObjectWithSameText() {
+            assertTrue(textObj.equals(create(textObj.value)));
+        }
+        
+        @Test
+        public void equalsObjectWithDifferentTyps() {
+            assertFalse(textObj.equals(intObj));
+        }
+        
+        @Test
+        public void equalsWithNull() {
+            assertFalse(textObj.equals(null));
+        }
+        
+        @Test
+        public void hasCodeIsEqualsObjectHasSameText() {
+            assertEquals(textObj.hashCode(), create(textObj.value).hashCode());
+        }
+        
+        @Test(expected=NullPointerException.class)
+        public void nullValue() {
+            create(null);
+        }
+        
+        StringValueObject create(String value){
+            return new StringValueObject(value);
+        }
+    }
+    
+    public static class ScoreTest {
+        
+        @Test
+        public void unknownScore(){
+            Score score = new Score(5);
+            assertEquals("unknown", score.toString());
+        }
     }
 
 }
